@@ -8,6 +8,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.nuwarobotics.service.camera.sdk.CameraSDK;
 
+import org.java_websocket.protocols.IProtocol;
+
+import java.net.Socket;
+
 public class FrameStreamingActivity extends AppCompatActivity {
 	private CameraSDK mCameraSDK;
 	private ImageView mImageFrame;
@@ -33,13 +37,16 @@ public class FrameStreamingActivity extends AppCompatActivity {
 	 * width=176 height=144
 	 * width=160 height=120
 	 */
-	final int WIDTH = 640;
-	final int HEIGHT = 480;
+	final int WIDTH = 1280;
+	final int HEIGHT = 768;
+	final int portNumber = 49169;
+	private Socket client;
+	private  String ipServer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setContentView(R.layout.activity_sample);
 		mCameraSDK = new CameraSDK(this);
 		initView();
 	}
@@ -52,8 +59,7 @@ public class FrameStreamingActivity extends AppCompatActivity {
 	}
 
 	private void initView() {
-/*		setContentView(R.layout.activity_sample);
-
+/*
 		mImageFrame = findViewById(R.id.img_frame);
 
 		// Request a single bitmap.
