@@ -1,129 +1,90 @@
 package com.nuwarobotics.sample.camera;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.nuwarobotics.service.camera.sdk.CameraSDK;
-
-import org.java_websocket.protocols.IProtocol;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 public class FrameStreamingActivity extends AppCompatActivity {
-	private CameraSDK mCameraSDK;
-	private ImageView mImageFrame;
+    /*
+     * Available resolutions for NB2 are:
+     * width=1920 height=1080
+     * width=1600 height=1200
+     * width=1440 height=1080
+     * width=1280 height=960
+     * width=1280 height=768
+     * width=1280 height=720
+     * width=1024 height=768
+     * width=800 height=600
+     * width=800 height=480
+     * width=720 height=480
+     * width=640 height=480
+     * width=640 height=360
+     * width=480 height=360
+     * width=480 height=320
+     * width=352 height=288
+     * width=320 height=240
+     * width=176 height=144
+     * width=160 height=120
+     */
 
-	/*
-	 * Available resolutions for NB2 are:
-	 * width=1920 height=1080
-	 * width=1600 height=1200
-	 * width=1440 height=1080
-	 * width=1280 height=960
-	 * width=1280 height=768
-	 * width=1280 height=720
-	 * width=1024 height=768
-	 * width=800 height=600
-	 * width=800 height=480
-	 * width=720 height=480
-	 * width=640 height=480
-	 * width=640 height=360
-	 * width=480 height=360
-	 * width=480 height=320
-	 * width=352 height=288
-	 * width=320 height=240
-	 * width=176 height=144
-	 * width=160 height=120
-	 */
-	final int WIDTH = 1280;
-	final int HEIGHT = 768;
-	final int portNumber = 49169;
-	private Socket client;
-	private  String ipServer;
+    private ImageView mImageFrame;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_sample);
-		mCameraSDK = new CameraSDK(this);
-		initView();
-	}
+    final int WIDTH = 1280;
+    final int HEIGHT = 768;
+    final int portNumber = 49169;
+    private Socket client;
+    private String ipServer;
+    private EditText etIP;
+	private InputStream input;
+	private OutputStream output;
+   // private Button btnSet;//unnecesary
+    private Button btnConnect;
+    //TODO the gamepad button
 
-	@Override
-	protected void onDestroy() {
-		mCameraSDK.stopCameraStreaming();
-		mCameraSDK.release();
-		super.onDestroy();
-	}
-
-	private void initView() {
-/*
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sample);
+        // we assign the buttons to a variable name
+		etIP = findViewById(R.id.ipText);
+		//btnSet = findViewById(R.id.setIp);//innecesario
+		btnConnect = findViewById(R.id.btnConnect);
 		mImageFrame = findViewById(R.id.img_frame);
 
-		// Request a single bitmap.
-		findViewById(R.id.btn_take_a_picture)
-				.setOnClickListener((v) -> mCameraSDK
-						.requestCameraFrame((code, bitmap) -> {
-							switch (code) {
-								case CameraSDK.CODE_NORMAL:
-								case CameraSDK.CODE_NORMAL_RESIZE:
-									runOnUiThread(() -> {
-										try {
-											mImageFrame.setImageBitmap(bitmap);
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
-									});
-									break;
-								case CameraSDK.CODE_TOO_MANY_CLIENTS:
-									// over 3 clients using currently.
-								case CameraSDK.CODE_ILLEGAL_RESOLUTION:
-									// assigned resolution is illegal for now.
-							}
-						}));
+		//btnConnect.setOnClickListener();
+        initView();
+    }
 
-		// Request the bitmap streaming.
-		findViewById(R.id.btn_start_streaming)
-				.setOnClickListener((v) -> mCameraSDK
-						.requestCameraStreaming(
-								WIDTH,
-								HEIGHT,
-								(code, bitmap) -> {
-									switch (code) {
-										case CameraSDK.CODE_NORMAL:
-										case CameraSDK.CODE_NORMAL_RESIZE:
-											runOnUiThread(() -> {
-												try {
-													mImageFrame.setImageBitmap(bitmap);
-												} catch (Exception e) {
-													e.printStackTrace();
-												}
-											});
-											break;
-										case CameraSDK.CODE_TOO_MANY_CLIENTS:
-											// over 3 clients using currently.
-										case CameraSDK.CODE_ILLEGAL_RESOLUTION:
-											// assigned resolution is illegal for now.
-									}
-								}));
+    @Override
+    protected void onDestroy() {
+		try {
+			client.close();
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+        super.onDestroy();
+    }
+	private void receiveBitmap(){
+			while(client.isConnected()){
+				try {
+					input = client.getInputStream();
+					//TODO deermine buffer size
 
-		// Stop streaming
-		findViewById(R.id.btn_stop_streaming).setOnClickListener((v) -> mCameraSDK.stopCameraStreaming());
-
-		// Lock all applications to use camera service.
-		findViewById(R.id.btn_lock).setOnClickListener((v) -> {
-			if (mCameraSDK.pauseCameraService()) {
-				Log.i(FrameStreamingActivity.class.getSimpleName(), "paused camera service");
-			} else {
-				Log.e(FrameStreamingActivity.class.getSimpleName(), "pause camera service failed");
+				}catch (IOException e){
+					e.printStackTrace();
+				}
 			}
-		});
-
-		// Important! If the lockCamera is invoked, must invoke unlockCamera to recover.
-		findViewById(R.id.btn_unlock).setOnClickListener((v) -> mCameraSDK.resumeCameraService());
-
-		findViewById(R.id.btn_exit).setOnClickListener((v) -> finish());*/
 	}
+
+    private void initView() {
+    }
+
 }
