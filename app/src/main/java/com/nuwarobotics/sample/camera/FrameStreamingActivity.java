@@ -1,5 +1,7 @@
 package com.nuwarobotics.sample.camera;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,6 +49,7 @@ public class FrameStreamingActivity extends AppCompatActivity {
 	private OutputStream output;
    // private Button btnSet;//unnecesary
     private Button btnConnect;
+    private String serverIP;
     //TODO the gamepad button
 
     @Override
@@ -72,19 +75,55 @@ public class FrameStreamingActivity extends AppCompatActivity {
 		}
         super.onDestroy();
     }
-	private void receiveBitmap(){
-			while(client.isConnected()){
-				try {
-					input = client.getInputStream();
-					//TODO deermine buffer size
 
-				}catch (IOException e){
-					e.printStackTrace();
-				}
-			}
-	}
 
     private void initView() {
+    	btnConnect.setOnClickListener((v)->{
+    		// first we get ip
+			serverIP = etIP.getText().toString().trim();
+			// we connect to the socket
+			try {
+				client = new Socket(serverIP,portNumber);
+			}catch (IOException e){
+				e.printStackTrace();
+			}
+
+			//we start the receive bitmap
+			receiveBitmap();
+			//
+		});
     }
+	private void receiveBitmap(){
+		while(client.isConnected()){
+			try {
+				input = client.getInputStream();
+				//TODO deermine buffer size i thinhk is height withd * 4
+				//or *3
+				int bytestoStore = WIDTH * HEIGHT* 4;
+				byte []  buffer = new byte[bytestoStore]; //
+				int bytesRead;
+				// TODO How we decode the array into a bitmap
+				/*
+			byte[] buffer = new byte[bitmapSize];
+            int bytesRead;
+            ByteArrayOutputStream bitmapBuffer = new ByteArrayOutputStream();
+
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                bitmapBuffer.write(buffer, 0, bytesRead);
+            }
+				 */
+			// i think it could be like this
+				input.read(buffer);
+				Bitmap bmp = BitmapFactory.decodeByteArray(buffer,0,bytestoStore);
+				mImageFrame.setImageBitmap(bmp);
+
+
+
+			}catch (IOException e){
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 }
