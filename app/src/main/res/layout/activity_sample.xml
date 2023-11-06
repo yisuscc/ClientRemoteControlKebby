@@ -15,7 +15,7 @@
     android:layout_width="500dp"
     android:layout_height="wrap_content"
     android:hint="Introduce IP Adress"
-    android:inputType="numberDecimal"
+    android:inputType="text"
     app:layout_constraintTop_toTopOf="parent"
     app:layout_constraintBottom_toTopOf="@id/img_frame"
     app:layout_constraintLeft_toLeftOf="parent"
