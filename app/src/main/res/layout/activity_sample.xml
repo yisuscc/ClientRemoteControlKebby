@@ -8,43 +8,6 @@
     android:background="@color/gray_01_50"
     android:keepScreenOn="true">
 
-
-
-<EditText
-    android:id="@+id/ipText"
-    android:layout_width="500dp"
-    android:layout_height="wrap_content"
-    android:hint="Introduce IP Adress"
-    android:inputType="text"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toTopOf="@id/img_frame"
-    app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toLeftOf="@id/setIp"
-
-    />
-    <Button
-        android:id="@+id/setIp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/img_frame"
-        app:layout_constraintLeft_toRightOf="@id/ipText"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="Set"
-
-        />
-    <Button
-        android:id="@+id/btnConnect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/img_frame"
-        app:layout_constraintLeft_toRightOf="@id/setIp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="Connect"
-
-        />
-
     <ImageView
         android:id="@+id/img_frame"
         android:layout_width="640dp"
@@ -56,6 +19,40 @@
         app:layout_constraintRight_toRightOf="parent"
         tools:ignore="ContentDescription"/>
 
+<EditText
+    android:id="@+id/ipText"
+    android:layout_width="500dp"
+    android:layout_height="wrap_content"
+    android:hint="Introduce IP Adress"
+    android:inputType="text"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/portText"
+
+    />
+ <EditText
+     android:id="@+id/portText"
+     android:layout_width="200dp"
+     android:layout_height="wrap_content"
+     android:hint="0000"
+     android:inputType="numberDecimal"
+     app:layout_constraintEnd_toStartOf="@id/btnConnect"
+     app:layout_constraintTop_toTopOf="parent"
+     ></EditText>
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+
+        app:layout_constraintEnd_toStartOf="@id/portText"
+        app:layout_constraintRight_toRightOf="parent"
+        android:text="Connect"
+
+        />
+
+
+
 
 
     <com.codertainment.dpadview.DPadView
@@ -63,9 +60,10 @@
     android:id="@+id/dpad"
     android:layout_width="128dp"
     app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/img_frame"
     app:layout_constraintLeft_toLeftOf="parent"
     android:layout_height="128dp"
     android:src="@drawable/ic_gamepad_black" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

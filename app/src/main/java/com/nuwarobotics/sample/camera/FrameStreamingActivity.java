@@ -10,13 +10,18 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.codertainment.dpadview.DPadView;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
+
 public class FrameStreamingActivity extends AppCompatActivity {
+
     /*
      * Available resolutions for NB2 are:
      * width=1920 height=1080
@@ -43,16 +48,18 @@ public class FrameStreamingActivity extends AppCompatActivity {
 
     final int WIDTH = 1280;
     final int HEIGHT = 768;
-    final int portNumber = 49169;
+    int remotePortNumber = 49169;
     private Socket client;
     private String ipServer;
     private EditText etIP;
+    private EditText etPort;
     private InputStream input;
     private OutputStream output;
     // private Button btnSet;//unnecesary
     private Button btnConnect;
     private String serverIP;
     Thread bitmapThread;
+    private  static DPadView gamepad;
     //TODO the gamepad button
 
     @Override
@@ -61,9 +68,11 @@ public class FrameStreamingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sample);
         // we assign the buttons to a variable name
         etIP = findViewById(R.id.ipText);
+        etPort  = findViewById(R.id.portText);
         //btnSet = findViewById(R.id.setIp);//innecesario
         btnConnect = findViewById(R.id.btnConnect);
-        mImageFrame = findViewById(R.id.img_frame);
+        gamepad = findViewById(R.id.dpad);
+
 
         //btnConnect.setOnClickListener();
         initView();
@@ -90,24 +99,28 @@ public class FrameStreamingActivity extends AppCompatActivity {
             // first we get ip
             new Thread(() -> {
                serverIP = etIP.getText().toString().trim();
+               remotePortNumber = Integer.parseInt((etPort.getText().toString().trim()));
 
                 Log.d("jesus", "retireved server ip");
                // serverIP = "192.168.85.130";
                 // we connect to the socket
                 try {
-                    client = new Socket(InetAddress.getByName(serverIP), portNumber);
+                    client = new Socket(InetAddress.getByName(serverIP), remotePortNumber);
+                    Log.d("socket","client connected");
                 }catch (IOException e) {
                    //e.printStackTrace();
                     Log.w("jesus",e.getMessage());
                 }
 
-
                 //we start the receive bitmap
-                receiveBitmap();
+               // receiveBitmap();
+                receiveTest();
             }).start();
 
             //
         });
+
+
 
     }
 
@@ -141,8 +154,47 @@ public class FrameStreamingActivity extends AppCompatActivity {
     }
 
     //   });
+private void receiveTest(){
 
+while (null != client){
+    if(client.isConnected()){
+        try {
+            ObjectInputStream ois = new ObjectInputStream(input);
+            byte[] bytes = (byte[])ois.readObject();
+            Bitmap  bmp = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+            runOnUiThread(()-> ((ImageView)findViewById(R.id.img_frame)).setImageBitmap(bmp));
 
+        }catch (Exception e){
+            Log.w("Jesus","parse bmp exception message" +e.getMessage());
+        }
+
+    }
 }
+}
+    //TODO Send command
+    private  void sendCommand(){
+        //Security and protection measures should be done on the server side
+        /*
+         1ª we analize the Motion event:
+            if its up  we stop completely
+            if it s down we clear  and go in the chosen direction
+            if its move  we change the direction
+            else  we stop
+         */
+        //The options are up, down left, right
+        // i am going to use touch instead of click (press insteda
+        //on click)
+        //whats dthe diffecentce between onGet Vs on Set
+
+
+
+
+
+    }
+
+
+
+    }
+
 
 
