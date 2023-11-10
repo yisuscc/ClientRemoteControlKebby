@@ -71,7 +71,7 @@ public class FrameStreamingActivity extends AppCompatActivity {
         etPort  = findViewById(R.id.portText);
         //btnSet = findViewById(R.id.setIp);//innecesario
         btnConnect = findViewById(R.id.btnConnect);
-        gamepad = findViewById(R.id.dpad);
+       // gamepad = findViewById(R.id.dpad);
 
 
         //btnConnect.setOnClickListener();
@@ -173,18 +173,6 @@ while (null != client){
 }
     //TODO Send command
     private  void sendCommand(){
-        //Security and protection measures should be done on the server side
-        /*
-         1ª we analize the Motion event:
-            if its up  we stop completely
-            if it s down we clear  and go in the chosen direction
-            if its move  we change the direction
-            else  we stop
-         */
-        //The options are up, down left, right
-        // i am going to use touch instead of click (press insteda
-        //on click)
-        //whats dthe diffecentce between onGet Vs on Set
 
 
 

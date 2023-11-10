@@ -42,7 +42,7 @@ dependencies {
     implementation (name: 'connectionmanager-0.4.8.12_69930af_2022-03-28_1818', ext:'aar')
     implementation 'com.github.shripal17:DPadView:1.0.3'
     implementation "com.squareup.retrofit2:converter-gson:2.4.0"
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.20'
+
 
 
 
