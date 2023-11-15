@@ -11,9 +11,13 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -59,7 +63,6 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     Thread bitmapThread;
 
 
-
     //TODO the gamepad but
     // ton
 
@@ -69,7 +72,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         setContentView(R.layout.activity_sample);
         // we assign the buttons to a variable name
         etIP = findViewById(R.id.ipText);
-        etPort  = findViewById(R.id.portText);
+        etPort = findViewById(R.id.portText);
         //btnSet = findViewById(R.id.setIp);//innecesario
         btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(this);
@@ -80,6 +83,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         findViewById(R.id.rightButton).setOnClickListener(this);
         findViewById(R.id.onButton).setOnClickListener(this);
         findViewById(R.id.offButton).setOnClickListener(this);
+
     }
 
     @Override
@@ -94,22 +98,26 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()){
+    public void onClick(View v) { //TODO: convert into an on Touch instead of an on click ?
+        switch (v.getId()) {
             case R.id.downButton:
-
+                sendCommand("moving","backward");
                 break;
             case R.id.upButton:
-
+                sendCommand("moving","frontward");
                 break;
             case R.id.leftButton:
+                sendCommand("moving","turnLeft");
                 break;
             case R.id.rightButton:
+                sendCommand("moving","turnRight");
                 break;
             case R.id.onButton:
+                sendCommand("streaming","start");
                 turnOnStreaming();
                 break;
             case R.id.offButton:
+                sendCommand("streaming","stop");
                 break;
             case R.id.btnConnect:
                 new Thread(() -> {
@@ -121,7 +129,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                     // we connect to the socket
                     // Avoid duplication connections
                     try {
-                        if(client != null && !client.isClosed()) {
+                        if (client != null && !client.isClosed()) {
                             client.close();
                         }
                     } catch (IOException e) {
@@ -131,12 +139,12 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
                     try {
                         client = new Socket(InetAddress.getByName(serverIP), remotePortNumber);
-                        Log.d("socket","client " + client + " try to connect " + serverIP + ":" + remotePortNumber);
+                        Log.d("socket", "client " + client + " try to connect " + serverIP + ":" + remotePortNumber);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                    // Just for verification
+
 
                 }).start();
                 break;
@@ -144,34 +152,52 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     }
 
     private void turnOnStreaming() {
-    new Thread(()->{
-        if (null != client) {
-            while (!client.isClosed()) {
-                if (client.isConnected()) {
-                    Log.i("socket", "socket connected");
-                    try {
-                        ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
-                        byte[] bytes = (byte[]) ois.readObject();
+        new Thread(() -> {
+            //TODO: active wait  ?
 
-                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            if (null != client) {
+                while (!client.isClosed()) {
+                    if (client.isConnected()) {
+                        Log.i("socket", "socket connected");
+                        try {
+                            ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+                            byte[] bytes = (byte[]) ois.readObject();
+
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 //                        Bitmap bmp = BitmapFactory.decodeStream(client.getInputStream());
-                        Log.i("bmp", "bitmap decoded");
-                        runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
-                    } catch (Exception e) {
-                        Log.w("jesus", "parse bmp exception message = " + e.getMessage());
+                            Log.i("bmp", "bitmap decoded");
+                            runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
+                        } catch (Exception e) {
+                            Log.w("jesus", "parse bmp exception message = " + e.getMessage());
+                        }
                     }
                 }
             }
-        }
-    }).start();
+        }).start();
     }
 
     private enum CONNECTION_STATE {
         DISCONNECTED, CONNECTING, CONNECTED
     }
 
-    // TODO: Send command
-    private  void sendCommand(){
+    private void sendCommand(String property,String action) {//Should receive the parameters instead to cleaner?
+   new Thread(()-> {
+       JSONObject cmd = new JSONObject();
+       try {
+           cmd.put("property",property);
+           cmd.put("action",action);
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+       try {
+           ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+           oos.writeObject(cmd);
+           oos.flush();
+       }catch (IOException e){
+           e.printStackTrace();
+       }
+
+   }).start();
 
     }
 }
