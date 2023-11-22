@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FrameStreamingActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -60,7 +61,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
     private Button btnConnect;
     private String serverIP;
-    Thread bitmapThread;
+    private AtomicBoolean streamingFlag = new AtomicBoolean(true);
 
 
     //TODO the gamepad but
@@ -113,10 +114,15 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                 sendCommand("moving","turnRight");
                 break;
             case R.id.onButton:
-                sendCommand("streaming","start");
-                turnOnStreaming();
+              if(!streamingFlag.get()){
+                  streamingFlag.set(true);
+                  sendCommand("streaming","start");
+                  turnOnStreaming();
+              }
+
                 break;
             case R.id.offButton:
+                streamingFlag.set(false);
                 sendCommand("streaming","stop");
                 break;
             case R.id.btnConnect:
@@ -151,12 +157,13 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         }
     }
 
-    private void turnOnStreaming() {
+    private void turnOnStreaming() {// Should we use thread instead of a void or a flag inside the while
+
         new Thread(() -> {
-            //TODO: active wait  ?
+
 
             if (null != client) {
-                while (!client.isClosed()) {
+                while (!client.isClosed()&& streamingFlag.get()) {
                     if (client.isConnected()) {
                         Log.i("socket", "socket connected");
                         try {
@@ -182,20 +189,18 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
     private void sendCommand(String property,String action) {//Should receive the parameters instead to cleaner?
    new Thread(()-> {
-       JSONObject cmd = new JSONObject();
-       try {
-           cmd.put("property",property);
-           cmd.put("action",action);
-       } catch (JSONException e) {
-           e.printStackTrace();
-       }
-       try {
-           ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-           oos.writeObject(cmd);
-           oos.flush();
-       }catch (IOException e){
-           e.printStackTrace();
-       }
+      if(client.isConnected() && client != null){
+          try {
+              JSONObject cmd = new JSONObject();
+              cmd.put("property",property);
+              cmd.put("action",action);
+              ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+              oos.writeObject(cmd);
+              oos.flush();
+          } catch (JSONException | IOException e) {
+              e.printStackTrace();
+          }
+      }
 
    }).start();
 
