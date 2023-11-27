@@ -10,9 +10,10 @@
 
     <ImageView
         android:id="@+id/img_frame"
-        android:layout_width="640dp"
-        android:layout_height="480dp"
-        android:scaleType="centerInside"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent"
+        android:scaleType="centerCrop"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

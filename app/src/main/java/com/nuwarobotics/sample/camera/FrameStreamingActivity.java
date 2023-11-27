@@ -17,7 +17,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -99,6 +98,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     }
 
     @Override
+
     public void onClick(View v) { //TODO: convert into an on Touch instead of an on click ?
         switch (v.getId()) {
             case R.id.downButton:
@@ -154,6 +154,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
                 }).start();
                 break;
+
         }
     }
 
@@ -189,16 +190,18 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
     private void sendCommand(String property,String action) {//Should receive the parameters instead to cleaner?
    new Thread(()-> {
-      if(client.isConnected() && client != null){
+       if(client != null && client.isConnected()){
+           Log.d("jesus", ""+property+action);
           try {
               JSONObject cmd = new JSONObject();
               cmd.put("property",property);
               cmd.put("action",action);
-              ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-              oos.writeObject(cmd);
+              OutputStream oos = client.getOutputStream();
+              oos.write(cmd.toString().getBytes());
               oos.flush();
           } catch (JSONException | IOException e) {
-              e.printStackTrace();
+
+             Log.d("jesus",""+e.getMessage());
           }
       }
 
