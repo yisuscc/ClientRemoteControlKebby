@@ -3,7 +3,9 @@ package com.nuwarobotics.sample.camera;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,7 +24,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class FrameStreamingActivity extends AppCompatActivity implements View.OnClickListener {
+public class FrameStreamingActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
     /*
      * Available resolutions for NB2 are:
@@ -57,14 +59,15 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private EditText etPort;
     private InputStream input;
     private OutputStream output;
-
+    private Handler mHandlerUP = new Handler();
+    private Handler mHandlerDown = new Handler();
+    private Handler mHandler;
     private Button btnConnect;
     private String serverIP;
     private AtomicBoolean streamingFlag = new AtomicBoolean(true);
+    private  long timeDelay = 100;
 
 
-    //TODO the gamepad but
-    // ton
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,12 +80,18 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(this);
         mImageFrame = findViewById(R.id.img_frame);
-        findViewById(R.id.upButton).setOnClickListener(this);
-        findViewById(R.id.downButton).setOnClickListener(this);
+        findViewById(R.id.btnDisconnect).setOnClickListener(this);
+  /*      findViewById(R.id.upButton).setOnClickListener(this);
+        findViewById(R.id.downButton).setOnClickListener(this);*/
         findViewById(R.id.leftButton).setOnClickListener(this);
         findViewById(R.id.rightButton).setOnClickListener(this);
+      findViewById(R.id.upButton).setOnTouchListener(this);
+        findViewById(R.id.downButton).setOnTouchListener(this);
+       /* findViewById(R.id.leftButton).setOnTouchListener(this);
+        findViewById(R.id.rightButton).setOnTouchListener(this);*/
         findViewById(R.id.onButton).setOnClickListener(this);
         findViewById(R.id.offButton).setOnClickListener(this);
+        showDisconnectedButtons();
 
     }
 
@@ -90,23 +99,63 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     protected void onDestroy() {
         try {
             if (null != client && !client.isClosed())
+               if(client.isConnected()){
+                   streamingFlag.set(false);
+                   sendCommand("general","disconnect");
+               }
                 client.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         super.onDestroy();
     }
+    private long delay = 500;
+ @Override
+ public boolean onTouch(View v, MotionEvent event) {
+     switch (v.getId()) {
+         case R.id.downButton:
+             switch(event.getAction()){
+                 case MotionEvent.ACTION_UP:
+                     if(mHandlerDown != null){
+                         mHandlerDown.removeCallbacks(back);
+                         mHandlerDown =null;
+                     }
+                     break;
+                 case MotionEvent.ACTION_DOWN:
+                     mHandlerDown = new Handler();
+                     mHandlerDown.postDelayed(back,timeDelay);
+                     break;
+             }
+             break;
+         case R.id.upButton:
+             switch(event.getAction()){
+                     case MotionEvent.ACTION_UP:
+                         if(mHandlerUP != null){
+                             mHandlerUP.removeCallbacks(front);
+                             mHandlerUP =null;
+                         }
+                     break;
+                 case MotionEvent.ACTION_DOWN:
+                     mHandlerUP= new Handler();
+                     mHandlerUP.postDelayed(front,timeDelay);
+                     break;
+             }
+             
+             break;
 
+
+     }
+return false;
+ }
     @Override
-
-    public void onClick(View v) { //TODO: convert into an on Touch instead of an on click ?
+    public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.downButton:
+           /* case R.id.downButton:
                 sendCommand("moving","backward");
                 break;
             case R.id.upButton:
                 sendCommand("moving","frontward");
-                break;
+                break;*/
             case R.id.leftButton:
                 sendCommand("moving","turnLeft");
                 break;
@@ -150,15 +199,48 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                         e.printStackTrace();
                     }
 
+                    runOnUiThread(()-> showConnectedButtons());
+                }).start();
 
-
+                break;
+            case R.id.btnDisconnect:
+                new Thread(()->{
+                    streamingFlag.set(false);
+                    sendCommand("general","disconnect");
+                    runOnUiThread(()-> showDisconnectedButtons());
                 }).start();
                 break;
 
         }
     }
+    private void showDisconnectedButtons(){
+        (findViewById(R.id.ipText)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.portText)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.btnConnect)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.upButton)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.downButton)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.leftButton)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.rightButton)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.btnDisconnect)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.offButton)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.onButton)).setVisibility(View.INVISIBLE);
 
-    private void turnOnStreaming() {// Should we use thread instead of a void or a flag inside the while
+    }
+    private void showConnectedButtons(){
+        (findViewById(R.id.ipText)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.portText)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.btnConnect)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.upButton)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.downButton)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.leftButton)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.rightButton)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.btnDisconnect)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.offButton)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.onButton)).setVisibility(View.VISIBLE);
+
+    }
+
+    private void turnOnStreaming() {
 
         new Thread(() -> {
 
@@ -184,14 +266,42 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         }).start();
     }
 
-    private enum CONNECTION_STATE {
-        DISCONNECTED, CONNECTING, CONNECTED
-    }
+    private  final Runnable left = new Runnable() {
+        @Override
+        public void run() {
+            sendCommand("moving","turnLeft");
+        }
+    };
 
-    private void sendCommand(String property,String action) {//Should receive the parameters instead to cleaner?
+
+    private final Runnable right = new Runnable() {
+        @Override
+        public void run() {
+            sendCommand("moving","turnRight");
+        }
+    };
+
+    private final Runnable front = new Runnable() {
+        @Override
+        public void run() {
+            sendCommand("moving","frontward");
+            mHandlerUP.postDelayed(this,timeDelay);
+        }
+    };
+
+    private final Runnable back = new Runnable() {
+        @Override
+        public void run() {
+            sendCommand("moving","backward");
+            mHandlerDown.postDelayed(this,timeDelay);
+        }
+    };
+
+    private void sendCommand(String property,String action) {
    new Thread(()-> {
+       Log.d("jesus", ""+property+action);
        if(client != null && client.isConnected()){
-           Log.d("jesus", ""+property+action);
+
           try {
               JSONObject cmd = new JSONObject();
               cmd.put("property",property);

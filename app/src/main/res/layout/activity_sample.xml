@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,41 +13,54 @@
         android:layout_height="match_parent"
         android:background="@color/transparent"
         android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        tools:ignore="ContentDescription"/>
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 
-<EditText
-    android:id="@+id/ipText"
-    android:layout_width="500dp"
-    android:layout_height="wrap_content"
-    android:hint="Introduce IP Adress"
-    android:inputType="text"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintEnd_toStartOf="@id/portText"
+    <EditText
+        android:id="@+id/ipText"
+        android:layout_width="500dp"
+        android:layout_height="wrap_content"
+        android:hint="Introduce IP Adress"
+        android:inputType="text"
+        app:layout_constraintEnd_toStartOf="@id/portText"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
 
-    />
- <EditText
-     android:id="@+id/portText"
-     android:layout_width="200dp"
-     android:layout_height="wrap_content"
-     android:hint="0000"
-     android:inputType="numberDecimal"
-     app:layout_constraintEnd_toStartOf="@id/btnConnect"
-     app:layout_constraintTop_toTopOf="parent"
-     ></EditText>
+        />
+
+    <EditText
+        android:id="@+id/portText"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:hint="0000"
+        android:inputType="numberDecimal"
+        app:layout_constraintEnd_toStartOf="@id/btnConnect"
+        app:layout_constraintTop_toTopOf="parent"></EditText>
+
     <Button
         android:id="@+id/btnConnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Connect"
+
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toEndOf="@id/portText"
         app:layout_constraintTop_toTopOf="parent"
 
-        app:layout_constraintEnd_toStartOf="@id/portText"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="Connect"
+        />
+
+    <Button
+        android:id="@+id/btnDisconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disconnect"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_centerHorizontal="true"
+        app:layout_constraintTop_toTopOf="parent"
 
         />
 
@@ -56,22 +68,23 @@
         android:id="@+id/onButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:text="on"
 
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
         />
+
     <Button
         android:id="@+id/offButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_centerVertical="true"
         android:text="off"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
 
         />
 
@@ -81,53 +94,48 @@
         android:id="@+id/upButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Up"
-        app:layout_constraintBottom_toTopOf="@+id/downButton"
         android:layout_above="@+id/downButton"
-        app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginBottom="16dp"
-        android:onClick="onUpButtonClick" />
+
+        android:text="Front"
+        app:layout_constraintBottom_toTopOf="@+id/downButton"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <!-- Left Button -->
     <Button
         android:id="@+id/leftButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@id/rightButton"
+        android:layout_marginBottom="32dp"
+        android:layout_marginEnd="16dp"
         android:text="left"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/rightButton"
-       android:layout_above="@id/rightButton"
-        android:layout_marginBottom="16dp"
-        android:onClick="onLeftButtonClick" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/rightButton" />
 
     <!-- Right Button -->
     <Button
         android:id="@+id/rightButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Right"
         android:layout_below="@id/leftButton"
-        app:layout_constraintRight_toRightOf="parent"
-       app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:onClick="onRightButtonClick" />
+        android:layout_marginBottom="32dp"
+        android:text="Right"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <!-- Down Button -->
     <Button
         android:id="@+id/downButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Down"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:layout_below="@id/upButton"
         android:layout_marginTop="16dp"
-        android:onClick="onDownButtonClick" />
 
-
-
-
+        android:text="Back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
