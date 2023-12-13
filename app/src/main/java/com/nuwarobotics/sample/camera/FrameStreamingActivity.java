@@ -16,9 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -61,37 +61,33 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private OutputStream output;
     private Handler mHandlerUP = new Handler();
     private Handler mHandlerDown = new Handler();
+    private Handler mHandlerLeft = new Handler();
+    private Handler mHandlerRight = new Handler();
     private Handler mHandler;
     private Button btnConnect;
     private String serverIP;
-    private AtomicBoolean streamingFlag = new AtomicBoolean(true);
-    private  long timeDelay = 100;
-
+    private AtomicBoolean streamingFlag = new AtomicBoolean(false);
+    private long timeDelay = 100;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample);
-        // we assign the buttons to a variable name
         etIP = findViewById(R.id.ipText);
         etPort = findViewById(R.id.portText);
-        //btnSet = findViewById(R.id.setIp);//innecesario
         btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(this);
         mImageFrame = findViewById(R.id.img_frame);
         findViewById(R.id.btnDisconnect).setOnClickListener(this);
-  /*      findViewById(R.id.upButton).setOnClickListener(this);
-        findViewById(R.id.downButton).setOnClickListener(this);*/
-        findViewById(R.id.leftButton).setOnClickListener(this);
-        findViewById(R.id.rightButton).setOnClickListener(this);
-      findViewById(R.id.upButton).setOnTouchListener(this);
+        findViewById(R.id.leftButton).setOnTouchListener(this);
+        findViewById(R.id.rightButton).setOnTouchListener(this);
+        findViewById(R.id.upButton).setOnTouchListener(this);
         findViewById(R.id.downButton).setOnTouchListener(this);
-       /* findViewById(R.id.leftButton).setOnTouchListener(this);
-        findViewById(R.id.rightButton).setOnTouchListener(this);*/
         findViewById(R.id.onButton).setOnClickListener(this);
         findViewById(R.id.offButton).setOnClickListener(this);
         showDisconnectedButtons();
+
 
     }
 
@@ -99,80 +95,100 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     protected void onDestroy() {
         try {
             if (null != client && !client.isClosed())
-               if(client.isConnected()){
-                   streamingFlag.set(false);
-                   sendCommand("general","disconnect");
-               }
-                client.close();
+                if (client.isConnected()) {
+                    streamingFlag.set(false);
+                    sendCommand("general", "disconnect");
+                }
+            client.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         super.onDestroy();
     }
+
     private long delay = 500;
- @Override
- public boolean onTouch(View v, MotionEvent event) {
-     switch (v.getId()) {
-         case R.id.downButton:
-             switch(event.getAction()){
-                 case MotionEvent.ACTION_UP:
-                     if(mHandlerDown != null){
-                         mHandlerDown.removeCallbacks(back);
-                         mHandlerDown =null;
-                     }
-                     break;
-                 case MotionEvent.ACTION_DOWN:
-                     mHandlerDown = new Handler();
-                     mHandlerDown.postDelayed(back,timeDelay);
-                     break;
-             }
-             break;
-         case R.id.upButton:
-             switch(event.getAction()){
-                     case MotionEvent.ACTION_UP:
-                         if(mHandlerUP != null){
-                             mHandlerUP.removeCallbacks(front);
-                             mHandlerUP =null;
-                         }
-                     break;
-                 case MotionEvent.ACTION_DOWN:
-                     mHandlerUP= new Handler();
-                     mHandlerUP.postDelayed(front,timeDelay);
-                     break;
-             }
-             
-             break;
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (v.getId()) {
+            case R.id.downButton:
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if (mHandlerDown != null) {
+                            mHandlerDown.removeCallbacks(back);
+                            mHandlerDown = null;
+                        }
+                        break;
+                    case MotionEvent.ACTION_DOWN:
+                        mHandlerDown = new Handler();
+                        mHandlerDown.postDelayed(back, timeDelay);
+                        break;
+                }
+                break;
+            case R.id.upButton:
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if (mHandlerUP != null) {
+                            mHandlerUP.removeCallbacks(front);
+                            mHandlerUP = null;
+                        }
+                        break;
+                    case MotionEvent.ACTION_DOWN:
+                        mHandlerUP = new Handler();
+                        mHandlerUP.postDelayed(front, timeDelay);
+                        break;
+                }
+
+                break;
+            case R.id.leftButton:
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if (mHandlerLeft != null) {
+                            mHandlerLeft.removeCallbacks(left);
+                            mHandlerLeft = null;
+                        }
+                        break;
+                    case MotionEvent.ACTION_DOWN:
+                        mHandlerLeft = new Handler();
+                        mHandlerLeft.postDelayed(left, timeDelay);
+                        break;
+                }
+                break;
+            case R.id.rightButton:
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if (mHandlerRight != null) {
+                            mHandlerRight.removeCallbacks(right);
+                            mHandlerRight = null;
+                        }
+                        break;
+                    case MotionEvent.ACTION_DOWN:
+                        mHandlerRight = new Handler();
+                        mHandlerRight.postDelayed(right, timeDelay);
+                        break;
+                }
+                break;
 
 
-     }
-return false;
- }
+        }
+        return false;
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-           /* case R.id.downButton:
-                sendCommand("moving","backward");
-                break;
-            case R.id.upButton:
-                sendCommand("moving","frontward");
-                break;*/
-            case R.id.leftButton:
-                sendCommand("moving","turnLeft");
-                break;
-            case R.id.rightButton:
-                sendCommand("moving","turnRight");
-                break;
-            case R.id.onButton:
-              if(!streamingFlag.get()){
-                  streamingFlag.set(true);
-                  sendCommand("streaming","start");
-                  turnOnStreaming();
-              }
 
+            case R.id.onButton:
+                if (!streamingFlag.get()) {
+                    streamingFlag.set(true);
+                    sendCommand("streaming", "start");
+                    turnOnStreaming();
+
+                }
                 break;
             case R.id.offButton:
                 streamingFlag.set(false);
-                sendCommand("streaming","stop");
+                sendCommand("streaming", "stop");
                 break;
             case R.id.btnConnect:
                 new Thread(() -> {
@@ -199,21 +215,23 @@ return false;
                         e.printStackTrace();
                     }
 
-                    runOnUiThread(()-> showConnectedButtons());
+                    runOnUiThread(() -> showConnectedButtons());
+
                 }).start();
 
                 break;
             case R.id.btnDisconnect:
-                new Thread(()->{
+                new Thread(() -> {
                     streamingFlag.set(false);
-                    sendCommand("general","disconnect");
-                    runOnUiThread(()-> showDisconnectedButtons());
+                    sendCommand("general", "disconnect");
+                    runOnUiThread(() -> showDisconnectedButtons());
                 }).start();
                 break;
 
         }
     }
-    private void showDisconnectedButtons(){
+
+    private void showDisconnectedButtons() {
         (findViewById(R.id.ipText)).setVisibility(View.VISIBLE);
         (findViewById(R.id.portText)).setVisibility(View.VISIBLE);
         (findViewById(R.id.btnConnect)).setVisibility(View.VISIBLE);
@@ -226,7 +244,8 @@ return false;
         (findViewById(R.id.onButton)).setVisibility(View.INVISIBLE);
 
     }
-    private void showConnectedButtons(){
+
+    private void showConnectedButtons() {
         (findViewById(R.id.ipText)).setVisibility(View.INVISIBLE);
         (findViewById(R.id.portText)).setVisibility(View.INVISIBLE);
         (findViewById(R.id.btnConnect)).setVisibility(View.INVISIBLE);
@@ -246,30 +265,42 @@ return false;
 
 
             if (null != client) {
-                while (!client.isClosed()&& streamingFlag.get()) {
+                while (!client.isClosed() && streamingFlag.get()) {
                     if (client.isConnected()) {
                         Log.i("socket", "socket connected");
-                        try {
-                            ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+
+                        if(streamingFlag.get()){
+                            try {
+                                receiveData();
+                            } catch (IOException | JSONException e) {
+                                Log.d("decode", "counld decodethe information");
+                                e.printStackTrace();
+                            }
+                        }
+
+
+                      /*      ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
                             byte[] bytes = (byte[]) ois.readObject();
 
                             Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 //                        Bitmap bmp = BitmapFactory.decodeStream(client.getInputStream());
                             Log.i("bmp", "bitmap decoded");
+
                             runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
                         } catch (Exception e) {
                             Log.w("jesus", "parse bmp exception message = " + e.getMessage());
-                        }
+                        }*/
                     }
                 }
             }
         }).start();
     }
 
-    private  final Runnable left = new Runnable() {
+    private final Runnable left = new Runnable() {
         @Override
         public void run() {
-            sendCommand("moving","turnLeft");
+            sendCommand("moving", "turnLeft");
+            mHandlerLeft.postDelayed(this, timeDelay);
         }
     };
 
@@ -277,45 +308,109 @@ return false;
     private final Runnable right = new Runnable() {
         @Override
         public void run() {
-            sendCommand("moving","turnRight");
+            sendCommand("moving", "turnRight");
+            mHandlerRight.postDelayed(this, timeDelay);
         }
     };
 
     private final Runnable front = new Runnable() {
         @Override
         public void run() {
-            sendCommand("moving","frontward");
-            mHandlerUP.postDelayed(this,timeDelay);
+            sendCommand("moving", "frontward");
+            mHandlerUP.postDelayed(this, timeDelay);
         }
     };
 
     private final Runnable back = new Runnable() {
         @Override
         public void run() {
-            sendCommand("moving","backward");
-            mHandlerDown.postDelayed(this,timeDelay);
+            sendCommand("moving", "backward");
+            mHandlerDown.postDelayed(this, timeDelay);
         }
     };
 
-    private void sendCommand(String property,String action) {
-   new Thread(()-> {
-       Log.d("jesus", ""+property+action);
-       if(client != null && client.isConnected()){
+    private JSONObject decodeInformation() {
+        String string = "";
+        JSONObject cmd = null;
+        if (streamingFlag.get() && !client.isClosed() && client.isConnected()) {
 
-          try {
-              JSONObject cmd = new JSONObject();
-              cmd.put("property",property);
-              cmd.put("action",action);
-              OutputStream oos = client.getOutputStream();
-              oos.write(cmd.toString().getBytes());
-              oos.flush();
-          } catch (JSONException | IOException e) {
+            try {
+                InputStream is = client.getInputStream();
+                byte[] bytes = new byte[1024];
+                is.read(bytes);
+                string = new String(bytes);
+                cmd = string.isEmpty() ? new JSONObject(string) : null;
+                Log.d("JSON", "" + cmd.toString());
 
-             Log.d("jesus",""+e.getMessage());
-          }
-      }
 
-   }).start();
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        return cmd;
+    }
+
+    private void receiveData() throws IOException, JSONException {
+        DataInputStream  dis = new DataInputStream(client.getInputStream());
+        // leemos el primer entero que nos da la información del tamaño de bytes
+        int dataSize = dis.readInt();
+        byte[] dataWithHeader = new byte[dataSize];
+        dis.read(dataWithHeader);
+        byte[] data  = new byte[dataSize-1];
+        Byte  header = 0;
+        for(int i= 0; i<dataSize;i++){
+            if(i==0){
+               header = dataWithHeader[i];
+            }
+            else{//TODO: changing the ofset  i think we can remove this part
+                data[i-1] = dataWithHeader[i];
+            }
+        }
+        switch (header.intValue()){
+            case 255: // is a bitmap
+                Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
+                Log.i("decoded", "bitmap decoded");
+                runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
+                break;
+            case 245: // is a string or a json
+                // first we convert it to string
+                String string=  new String(data);
+                Log.i("decoded","JSON Decoded"+ string);
+                JSONObject cmd = string != null ? new JSONObject(string) : null;
+                // TODO: what we do wiith the json?11111111111111111111111
+                break;
+
+        }
+
+
+
+
+
+        //
+
+    }
+
+    private void sendCommand(String property, String action) {
+        new Thread(() -> {
+            Log.d("jesus", "" + property + action);
+            if (client != null && client.isConnected()) {
+
+                try {
+                    JSONObject cmd = new JSONObject();
+                    cmd.put("property", property);
+                    cmd.put("action", action);
+                    OutputStream oos = client.getOutputStream();
+                    oos.write(cmd.toString().getBytes());
+                    oos.flush();
+                } catch (JSONException | IOException e) {
+
+                    Log.d("jesus", "" + e.getMessage());
+                }
+            }
+
+        }).start();
 
     }
 }
