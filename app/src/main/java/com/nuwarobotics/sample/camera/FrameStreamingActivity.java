@@ -16,13 +16,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import ContainerSocket.DataType;
+import ContainerSocket.SocketByteContainer;
+
 
 public class FrameStreamingActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
@@ -69,6 +74,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private AtomicBoolean streamingFlag = new AtomicBoolean(false);
     private long timeDelay = 100;
 
+    private SocketByteContainer sbc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -271,25 +277,15 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
                         if(streamingFlag.get()){
                             try {
-                                receiveData();
-                            } catch (IOException | JSONException e) {
+                                receivedata2();
+                            } catch (IOException | JSONException | ClassNotFoundException e) {
                                 Log.d("decode", "counld decodethe information");
                                 e.printStackTrace();
                             }
                         }
 
 
-                      /*      ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
-                            byte[] bytes = (byte[]) ois.readObject();
 
-                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//                        Bitmap bmp = BitmapFactory.decodeStream(client.getInputStream());
-                            Log.i("bmp", "bitmap decoded");
-
-                            runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
-                        } catch (Exception e) {
-                            Log.w("jesus", "parse bmp exception message = " + e.getMessage());
-                        }*/
                     }
                 }
             }
@@ -329,30 +325,29 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         }
     };
 
-    private JSONObject decodeInformation() {
-        String string = "";
-        JSONObject cmd = null;
-        if (streamingFlag.get() && !client.isClosed() && client.isConnected()) {
+    private void receivedata2() throws IOException, ClassNotFoundException, JSONException {
+        ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+        SocketByteContainer sbc = (SocketByteContainer)ois.readObject();
+        if(sbc != null){
+            switch (sbc.getDataType()){
+                case BITMAP:
+                    Log.d("decode","received a bitmap");
+                    byte[] bytes = (byte[]) sbc.getDataArray();
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
+                    break;
+                case JSON:
+                    byte[] b = (byte[]) sbc.getDataArray();
+                    String str = new String(b);
+                    Log.d("decode","received a json"+str);
+                    JSONObject dataInfo = new JSONObject(str);
 
-            try {
-                InputStream is = client.getInputStream();
-                byte[] bytes = new byte[1024];
-                is.read(bytes);
-                string = new String(bytes);
-                cmd = string.isEmpty() ? new JSONObject(string) : null;
-                Log.d("JSON", "" + cmd.toString());
-
-
-            } catch (IOException | JSONException e) {
-                e.printStackTrace();
+                    break;
             }
-
         }
-
-        return cmd;
     }
 
-    private void receiveData() throws IOException, JSONException {
+   /* private void receiveData() throws IOException, JSONException {
         DataInputStream  dis = new DataInputStream(client.getInputStream());
         // leemos el primer entero que nos da la información del tamaño de bytes
         int dataSize = dis.readInt();
@@ -390,7 +385,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
         //
 
-    }
+    }*/
 
     private void sendCommand(String property, String action) {
         new Thread(() -> {
@@ -401,8 +396,9 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                     JSONObject cmd = new JSONObject();
                     cmd.put("property", property);
                     cmd.put("action", action);
-                    OutputStream oos = client.getOutputStream();
-                    oos.write(cmd.toString().getBytes());
+                    SocketByteContainer sbc = new SocketByteContainer(DataType.JSON,cmd.toString().getBytes());
+                    ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+                    oos.writeObject(sbc);
                     oos.flush();
                 } catch (JSONException | IOException e) {
 
