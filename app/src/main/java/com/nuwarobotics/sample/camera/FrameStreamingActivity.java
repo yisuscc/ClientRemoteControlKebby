@@ -69,6 +69,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private Handler mHandlerLeft = new Handler();
     private Handler mHandlerRight = new Handler();
     private Handler mHandler;
+    private FaceInfoView mFaceInfo;
     private Button btnConnect;
     private String serverIP;
     private AtomicBoolean streamingFlag = new AtomicBoolean(false);
@@ -85,6 +86,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(this);
         mImageFrame = findViewById(R.id.img_frame);
+        mFaceInfo = findViewById(R.id.faceInfo);
         findViewById(R.id.btnDisconnect).setOnClickListener(this);
         findViewById(R.id.leftButton).setOnTouchListener(this);
         findViewById(R.id.rightButton).setOnTouchListener(this);
@@ -104,8 +106,9 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                 if (client.isConnected()) {
                     streamingFlag.set(false);
                     sendCommand("general", "disconnect");
+                    client.close();
                 }
-            client.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -277,10 +280,12 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
                         if(streamingFlag.get()){
                             try {
+                                Log.d("decode","prooced to invoke the received data");
                                 receivedata2();
+
                             } catch (IOException | JSONException | ClassNotFoundException e) {
-                                Log.d("decode", "counld decodethe information");
-                                e.printStackTrace();
+                                Log.d("decode", "counld decodethe information "+ e.getMessage());
+                               ;
                             }
                         }
 
@@ -341,6 +346,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                     String str = new String(b);
                     Log.d("decode","received a json"+str);
                     JSONObject dataInfo = new JSONObject(str);
+                    mFaceInfo.setData(dataInfo);
 
                     break;
             }
