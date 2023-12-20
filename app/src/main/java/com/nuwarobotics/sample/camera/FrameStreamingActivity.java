@@ -17,10 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,26 +53,26 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
     private ImageView mImageFrame;
 
-    final int WIDTH = 1280;
-    final int HEIGHT = 768;
+
     int remotePortNumber = 49169;
+    int remotePortNumber2 = 49169;
     private Socket client;
-    private String ipServer;
+    private Socket client2;
+
     private EditText etIP;
     private EditText etPort;
-    private InputStream input;
-    private OutputStream output;
+    private EditText etPort2;
+
     private Handler mHandlerUP = new Handler();
     private Handler mHandlerDown = new Handler();
     private Handler mHandlerLeft = new Handler();
     private Handler mHandlerRight = new Handler();
-    private Handler mHandler;
     private Button btnConnect;
     private String serverIP;
     private AtomicBoolean streamingFlag = new AtomicBoolean(false);
     private long timeDelay = 100;
 
-    private SocketByteContainer sbc;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +80,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         setContentView(R.layout.activity_sample);
         etIP = findViewById(R.id.ipText);
         etPort = findViewById(R.id.portText);
+        etPort2 = findViewById(R.id.portText2);
         btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(this);
         mImageFrame = findViewById(R.id.img_frame);
@@ -105,7 +104,9 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                     streamingFlag.set(false);
                     sendCommand("general", "disconnect");
                 }
+
             client.close();
+            client2.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -200,6 +201,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                 new Thread(() -> {
                     serverIP = etIP.getText().toString().trim();
                     remotePortNumber = Integer.parseInt((etPort.getText().toString().trim()));
+                    remotePortNumber2 = Integer.parseInt((etPort2.getText().toString().trim()));
 
                     Log.d("jesus", "retireved server ip");
                     // serverIP = "192.168.85.130";
@@ -209,6 +211,9 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                         if (client != null && !client.isClosed()) {
                             client.close();
                         }
+                        if (client2 != null && !client2.isClosed()) {
+                            client2.close();
+                        }
                     } catch (IOException e) {
                         //e.printStackTrace();
                         Log.w("jesus", "e.getMessage() = " + e.getMessage());
@@ -217,6 +222,8 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
                     try {
                         client = new Socket(InetAddress.getByName(serverIP), remotePortNumber);
                         Log.d("socket", "client " + client + " try to connect " + serverIP + ":" + remotePortNumber);
+                        client2 = new Socket(InetAddress.getByName(serverIP), remotePortNumber2);
+                        Log.d("socket", "client " + client2 + " try to connect " + serverIP + ":" + remotePortNumber2);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -240,21 +247,23 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private void showDisconnectedButtons() {
         (findViewById(R.id.ipText)).setVisibility(View.VISIBLE);
         (findViewById(R.id.portText)).setVisibility(View.VISIBLE);
+        (findViewById(R.id.portText2)).setVisibility(View.VISIBLE);
         (findViewById(R.id.btnConnect)).setVisibility(View.VISIBLE);
-        (findViewById(R.id.upButton)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.downButton)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.leftButton)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.rightButton)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.btnDisconnect)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.offButton)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.onButton)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.upButton)).setVisibility(View.GONE);
+        (findViewById(R.id.downButton)).setVisibility(View.GONE);
+        (findViewById(R.id.leftButton)).setVisibility(View.GONE);
+        (findViewById(R.id.rightButton)).setVisibility(View.GONE);
+        (findViewById(R.id.btnDisconnect)).setVisibility(View.GONE);
+        (findViewById(R.id.offButton)).setVisibility(View.GONE);
+        (findViewById(R.id.onButton)).setVisibility(View.GONE);
 
     }
 
     private void showConnectedButtons() {
-        (findViewById(R.id.ipText)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.portText)).setVisibility(View.INVISIBLE);
-        (findViewById(R.id.btnConnect)).setVisibility(View.INVISIBLE);
+        (findViewById(R.id.ipText)).setVisibility(View.GONE);
+        (findViewById(R.id.portText)).setVisibility(View.GONE);
+        (findViewById(R.id.portText2)).setVisibility(View.GONE);
+        (findViewById(R.id.btnConnect)).setVisibility(View.GONE);
         (findViewById(R.id.upButton)).setVisibility(View.VISIBLE);
         (findViewById(R.id.downButton)).setVisibility(View.VISIBLE);
         (findViewById(R.id.leftButton)).setVisibility(View.VISIBLE);
@@ -270,13 +279,14 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         new Thread(() -> {
 
 
-            if (null != client) {
-                while (!client.isClosed() && streamingFlag.get()) {
-                    if (client.isConnected()) {
+            if (null != client && client2 != null) {
+                while (!client.isClosed() && !client2.isClosed() && streamingFlag.get()) {
+                    if (client.isConnected() && client2.isConnected()) {
                         Log.i("socket", "socket connected");
 
                         if(streamingFlag.get()){
                             try {
+                                receivedata1();
                                 receivedata2();
                             } catch (IOException | JSONException | ClassNotFoundException e) {
                                 Log.d("decode", "counld decodethe information");
@@ -325,7 +335,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
         }
     };
 
-    private void receivedata2() throws IOException, ClassNotFoundException, JSONException {
+    private void receivedata1() throws IOException, ClassNotFoundException, JSONException {
         ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
         SocketByteContainer sbc = (SocketByteContainer)ois.readObject();
         if(sbc != null){
@@ -344,10 +354,33 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
                     break;
             }
+
+        }
+    }
+    private void receivedata2() throws IOException, ClassNotFoundException, JSONException {
+        ObjectInputStream ois = new ObjectInputStream(client2.getInputStream());
+        SocketByteContainer sbc = (SocketByteContainer)ois.readObject();
+        if(sbc != null){
+            switch (sbc.getDataType()){
+                case BITMAP:
+                    Log.d("decode","received a bitmap");
+                    byte[] bytes = (byte[]) sbc.getDataArray();
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
+                    break;
+                case JSON:
+                    byte[] b = (byte[]) sbc.getDataArray();
+                    String str = new String(b);
+                    Log.d("decode","received a json"+str);
+                    JSONObject dataInfo = new JSONObject(str);
+
+                    break;
+            }
+
         }
     }
 
-   /* private void receiveData() throws IOException, JSONException {
+   /* private void receiveBytes() throws IOException, JSONException {
         DataInputStream  dis = new DataInputStream(client.getInputStream());
         // leemos el primer entero que nos da la información del tamaño de bytes
         int dataSize = dis.readInt();

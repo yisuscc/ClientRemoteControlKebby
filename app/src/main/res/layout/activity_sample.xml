@@ -25,9 +25,11 @@
         android:layout_height="wrap_content"
         android:hint="Introduce IP Adress"
         android:inputType="text"
-        app:layout_constraintEnd_toStartOf="@id/portText"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+
+
 
         />
 
@@ -37,8 +39,21 @@
         android:layout_height="wrap_content"
         android:hint="0000"
         android:inputType="numberDecimal"
-        app:layout_constraintEnd_toStartOf="@id/btnConnect"
-        app:layout_constraintTop_toTopOf="parent"></EditText>
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/ipText"
+        app:layout_constraintBottom_toBottomOf="@id/portText2" />
+
+    <EditText
+        android:id="@+id/portText2"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:hint="0000"
+        android:inputType="numberDecimal"
+        app:layout_constraintTop_toBottomOf="@id/portText"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnConnect"/>
 
     <Button
         android:id="@+id/btnConnect"
@@ -47,8 +62,10 @@
         android:text="Connect"
 
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toEndOf="@id/portText"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+
 
         />
 
