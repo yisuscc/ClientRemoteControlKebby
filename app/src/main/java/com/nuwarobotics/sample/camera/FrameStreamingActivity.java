@@ -72,7 +72,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private FaceInfoView mFaceInfo;
     private Button btnConnect;
     private String serverIP;
-    private AtomicBoolean streamingFlag = new AtomicBoolean(false);
+    private AtomicBoolean streamingFlag = new AtomicBoolean(true);
     private long timeDelay = 100;
 
     private SocketByteContainer sbc;
@@ -226,7 +226,9 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
 
                     runOnUiThread(() -> showConnectedButtons());
 
+
                 }).start();
+                turnOnStreaming();
 
                 break;
             case R.id.btnDisconnect:
