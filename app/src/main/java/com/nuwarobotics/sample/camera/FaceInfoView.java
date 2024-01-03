@@ -12,7 +12,8 @@ import android.view.View;
 import org.json.JSONObject;
 
 import java.util.Locale;
-
+// Unused class, you can safely delete it
+//only left as an example on  how it works with only one face data
 public class FaceInfoView extends View {
     // THis class is provided by Will Lin
     // i only did a few modifications

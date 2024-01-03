@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
 
 }
-//apply plugin: 'kotlin-android'
+
 
 android {
     compileSdkVersion 30
@@ -41,11 +41,9 @@ dependencies {
 
     implementation (name: 'NuwaSDK-2022-12-22_v2.1.0.08.45457a2', ext:'aar')
     implementation (name: 'connectionmanager-0.4.8.12_69930af_2022-03-28_1818', ext:'aar')
-    implementation 'com.github.shripal17:DPadView:1.0.3'
     implementation "com.squareup.retrofit2:converter-gson:2.4.0"
     implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: [])
-    //implementation "androidx.core:core-ktx:+"
-   // implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
 
 
 }

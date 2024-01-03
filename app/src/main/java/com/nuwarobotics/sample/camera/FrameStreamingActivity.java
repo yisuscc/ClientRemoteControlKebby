@@ -17,10 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,28 +52,20 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
      */
 
     private ImageView mImageFrame;
-
-    final int WIDTH = 1280;
-    final int HEIGHT = 768;
     int remotePortNumber = 49169;
     private Socket client;
-    private String ipServer;
     private EditText etIP;
     private EditText etPort;
-    private InputStream input;
-    private OutputStream output;
     private Handler mHandlerUP = new Handler();
     private Handler mHandlerDown = new Handler();
     private Handler mHandlerLeft = new Handler();
     private Handler mHandlerRight = new Handler();
-    private Handler mHandler;
     private FaceInfoView2 mFaceInfo;
     private Button btnConnect;
     private String serverIP;
     private AtomicBoolean streamingFlag = new AtomicBoolean(true);
     private long timeDelay = 100;
 
-    private SocketByteContainer sbc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -354,46 +344,6 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
             }
         }
     }
-
-   /* private void receiveData() throws IOException, JSONException {
-        DataInputStream  dis = new DataInputStream(client.getInputStream());
-        // leemos el primer entero que nos da la información del tamaño de bytes
-        int dataSize = dis.readInt();
-        byte[] dataWithHeader = new byte[dataSize];
-        dis.read(dataWithHeader);
-        byte[] data  = new byte[dataSize-1];
-        Byte  header = 0;
-        for(int i= 0; i<dataSize;i++){
-            if(i==0){
-               header = dataWithHeader[i];
-            }
-            else{//TODO: changing the ofset  i think we can remove this part
-                data[i-1] = dataWithHeader[i];
-            }
-        }
-        switch (header.intValue()){
-            case 255: // is a bitmap
-                Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
-                Log.i("decoded", "bitmap decoded");
-                runOnUiThread(() -> mImageFrame.setImageBitmap(bmp));
-                break;
-            case 245: // is a string or a json
-                // first we convert it to string
-                String string=  new String(data);
-                Log.i("decoded","JSON Decoded"+ string);
-                JSONObject cmd = string != null ? new JSONObject(string) : null;
-                // TODO: what we do wiith the json?11111111111111111111111
-                break;
-
-        }
-
-
-
-
-
-        //
-
-    }*/
 
     private void sendCommand(String property, String action) {
         new Thread(() -> {
