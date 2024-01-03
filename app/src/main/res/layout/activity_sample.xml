@@ -16,7 +16,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
-    <com.nuwarobotics.sample.camera.FaceInfoView
+    <com.nuwarobotics.sample.camera.FaceInfoView2
         android:id="@+id/faceInfo"
         android:layout_width="0dp"
         android:layout_height="0dp"

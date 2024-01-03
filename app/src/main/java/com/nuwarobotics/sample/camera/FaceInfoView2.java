@@ -28,7 +28,7 @@ public class FaceInfoView2 extends View {
     /* private String mAge = "";
      private String mGender = "";
      private int mBottom, mLeft, mRight, mTop;*/
-    private List<DataFace> faceList;
+    private final List<DataFace> faceList = new ArrayList<>();
     private int horizontalRatio;
     private int verticalRatio;
 
@@ -40,47 +40,47 @@ public class FaceInfoView2 extends View {
         mPaint.setColor(Color.YELLOW);
         horizontalRatio = getResources().getDisplayMetrics().widthPixels / 640;
         verticalRatio = getResources().getDisplayMetrics().heightPixels / 480;
-        faceList = new ArrayList<>();
 
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        Log.d("jsonDraw", "draw the data face" +faceList.toString());
         final float DENSITY = getResources().getDisplayMetrics().density;
 
         final float FONT_SIZE = 24 * DENSITY;
-        for (DataFace face : faceList) {
-            mPaint.setTextSize(FONT_SIZE);
-            mPaint.setStyle(Paint.Style.FILL);
-            final String FORMAT_AGE = "Age: %1$s";
-            final String FORMAT_GENDER = "Gender: %1$s";
-            int mLeft,mTop,mRight,mBottom;
-            //TODO refcator the variable names
-            mLeft = face.getLeft();
-            mRight = face.getRight();
-            mTop = face.getTop();
-            mBottom = face.getBottom();
-            String mAge,mGender;
-            mAge= face.getAge();
-            mGender = face.getGender();
-            mRect.set(mLeft, mTop, mRight, mBottom);
-            mPaint.setStyle(Paint.Style.STROKE);
-            canvas.drawRect(mRect, mPaint);
+        synchronized (faceList) {
+            for (DataFace face : faceList) {
+                mPaint.setTextSize(FONT_SIZE);
+                mPaint.setStyle(Paint.Style.FILL);
+                final String FORMAT_AGE = "Age: %1$s";
+                final String FORMAT_GENDER = "Gender: %1$s";
+                int mLeft, mTop, mRight, mBottom;
+                //TODO refcator the variable names
+                mLeft = face.getLeft();
+                mRight = face.getRight();
+                mTop = face.getTop();
+                mBottom = face.getBottom();
+                String mAge, mGender;
+                mAge = face.getAge();
+                mGender = face.getGender();
+                mRect.set(mLeft, mTop, mRight, mBottom);
+                mPaint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(mRect, mPaint);
 
-
-            canvas.drawText(String.format(Locale.ENGLISH, FORMAT_AGE, mAge), mLeft, (mBottom - FONT_SIZE), mPaint);
-            canvas.drawText(String.format(Locale.ENGLISH, FORMAT_GENDER, mGender), mLeft, mBottom, mPaint);
+                Log.d("jsonDraw", "drawing the following face" + face.toString());
+                canvas.drawText(String.format(Locale.ENGLISH, FORMAT_AGE, mAge), mLeft, (mBottom - FONT_SIZE), mPaint);
+                canvas.drawText(String.format(Locale.ENGLISH, FORMAT_GENDER, mGender), mLeft, mBottom, mPaint);
+            }
         }
-
 
     }
 
 
     public void setData(JSONObject data) {
         if (null != data) {
-            final String FIELD_FACES = "faces"; //TODO: Change it accordibng to the correct names
+            final String FIELD_FACES = "totalFaces"; //TODO: Change it accordibng to the correct names
             final String FIELD_AGE = "age";
             final String FIELD_GENDER = "gender";
             final String FIELD_RECT = "rect";
@@ -88,34 +88,40 @@ public class FaceInfoView2 extends View {
             final String FIELD_RECT_LEFT = "left";
             final String FIELD_RECT_RIGHT = "right";
             final String FIELD_RECT_TOP = "top";
+            synchronized (faceList) {
+                faceList.clear();
+                try {
+                    if (data.has(FIELD_FACES)) {
+                        JSONArray facesArray = data.getJSONArray(FIELD_FACES);
+                        Log.d("json2", "Proceec to transjorm this json:" + facesArray.toString());
+                        //for each of the fields in json array
+                        for (int i = 0; i < facesArray.length(); i++) {
+                            JSONObject faceObject = facesArray.getJSONObject(i);
+                            Log.d("json2", "we obtain the following array" + faceObject.toString());
+                            if (faceObject.has(FIELD_AGE) && // onoly stores thefaces with the  complete data
+                                    faceObject.has(FIELD_GENDER) && faceObject.has(FIELD_RECT)) {
+                                Log.d("json3", "ading the following face" + faceObject.toString());
+                                DataFace dataFace = new DataFace();
+                                dataFace.setAge(faceObject.getString(FIELD_AGE));
+                                dataFace.setGender(faceObject.getString(FIELD_GENDER));
+                                JSONObject rect = faceObject.getJSONObject(FIELD_RECT);
+                                dataFace.setTop(rect.getInt(FIELD_RECT_TOP) * verticalRatio);
+                                dataFace.setBottom(rect.getInt(FIELD_RECT_BOTTOM) * verticalRatio);
+                                dataFace.setLeft(rect.getInt(FIELD_RECT_LEFT) * horizontalRatio);
+                                dataFace.setRight(rect.getInt(FIELD_RECT_RIGHT) * horizontalRatio);
+                                faceList.add(dataFace);
 
-            try {
-                if (data.has(FIELD_FACES)) {
-                    JSONArray facesArray = data.getJSONArray(FIELD_FACES);
-                    //for each of the fields in json array
-                    for (int i = 0; i < facesArray.length(); i++) {
-                        JSONObject faceObject = facesArray.getJSONObject(i);
-                        if (faceObject.has(FIELD_AGE) && // onoly stores thefaces with the  complete data
-                                faceObject.has(FIELD_GENDER) && faceObject.has(FIELD_RECT)) {
-                            DataFace dataFace = new DataFace();
-                            dataFace.setAge(faceObject.getString(FIELD_AGE));
-                            dataFace.setGender(faceObject.getString(FIELD_GENDER));
-                            dataFace.setTop(faceObject.getInt(FIELD_RECT_TOP) * verticalRatio);
-                            dataFace.setBottom(faceObject.getInt(FIELD_RECT_BOTTOM) * verticalRatio);
-                            dataFace.setLeft(faceObject.getInt(FIELD_RECT_LEFT) * horizontalRatio);
-                            dataFace.setRight(faceObject.getInt(FIELD_RECT_RIGHT) * horizontalRatio);
-                            faceList.add(dataFace);
-
+                            }
                         }
+
+
                     }
-
-
+                } catch (Exception e) {
+                    Log.d("JSON3", "parse data exception message = " + e.getMessage());
                 }
-            } catch (Exception e) {
-                Log.w(TAG, "parse data exception message = " + e.getMessage());
             }
+            invalidate();// wwhat this does ?
         }
-        invalidate();// wwhat this does ?
     }
 
 }

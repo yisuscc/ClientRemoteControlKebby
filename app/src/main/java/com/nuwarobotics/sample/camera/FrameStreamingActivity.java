@@ -69,7 +69,7 @@ public class FrameStreamingActivity extends AppCompatActivity implements View.On
     private Handler mHandlerLeft = new Handler();
     private Handler mHandlerRight = new Handler();
     private Handler mHandler;
-    private FaceInfoView mFaceInfo;
+    private FaceInfoView2 mFaceInfo;
     private Button btnConnect;
     private String serverIP;
     private AtomicBoolean streamingFlag = new AtomicBoolean(true);
